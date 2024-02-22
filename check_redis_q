@@ -1,0 +1,34 @@
+#!/bin/bash
+
+EXPECTED_ARGS=3
+if [ $# -ne $EXPECTED_ARGS ]; then
+    echo "Usage: $0 queue_name warning_threshold critical_threshold"
+    exit 3
+fi
+
+QUEUE_NAME=$1
+WARNING_THRESHOLD=$2
+CRITICAL_THRESHOLD=$3
+
+queue_length=$(redis-cli -p 6379 LLEN "$QUEUE_NAME" 2>/dev/null)
+
+if [ $? -ne 0 ]; then
+    echo "UNKNOWN - Could not connect to Redis server on port 6379."
+    exit 3
+fi
+
+if ! [[ "$queue_length" =~ ^[0-9]+$ ]]; then
+    echo "UNKNOWN - Queue length is not a number."
+    exit 3
+fi
+
+if [ "$queue_length" -ge "$CRITICAL_THRESHOLD" ]; then
+    echo "CRITICAL - $QUEUE_NAME queue is $queue_length"
+    exit 2
+elif [ "$queue_length" -ge "$WARNING_THRESHOLD" ]; then
+    echo "WARNING - $QUEUE_NAME queue is $queue_length"
+    exit 1
+else
+    echo "OK - $QUEUE_NAME queue is $queue_length"
+    exit 0
+fi
