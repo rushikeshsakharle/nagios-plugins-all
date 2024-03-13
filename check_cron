@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -x
+
+PROCESS=`systemctl status crond | grep "Main PID" | awk '{print $3}'`
+
+SERVICE=`systemctl status crond`
+
+RETURN_VAL=$?
+
+if [[ $RETURN_VAL -eq 0 ]]; then
+
+        echo "Crond service running with PID $PROCESS"
+
+        exit 0
+
+else
+
+        echo "Crond service not running"
+
+        exit 2
+
+fi
+
+

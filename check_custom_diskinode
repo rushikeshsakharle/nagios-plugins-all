@@ -1,0 +1,37 @@
+while getopts P:W:C: option
+do
+    case "${option}"
+        in
+                P) PARTDISK=${OPTARG};;
+                W) WARNTHRESH=${OPTARG};;
+                C) CRITTHRESH=$OPTARG;;
+
+        esac
+done
+
+CURUSAGE=`df -hi $PARTDISK | egrep -v "grep|Filesystem" | awk {'print $5'} | cut -d"%" -f1`
+COMUSAGE=`df -hi $PARTDISK`
+
+if
+     [ $CURUSAGE -gt $CRITTHRESH ]
+then
+     OUTPUT=`echo "CRIT $CURUSAGE% used - $COMUSAGE"`
+     echo $OUTPUT
+     exit 2
+else
+                if
+                        [ $CURUSAGE -gt $WARNTHRESH ]
+                then
+                        OUTPUT=`echo "WARN $CURUSAGE% used - $COMUSAGE"`
+                        echo $OUTPUT
+                        exit 1
+                else
+                        OUTPUT=`echo "OK $CURUSAGE% used - $COMUSAGE"`
+                        echo $OUTPUT
+                        exit 0
+                fi
+
+fi
+
+
+
